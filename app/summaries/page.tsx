@@ -1,5 +1,5 @@
 import { prisma } from "@/src/lib/db/prisma";
-import SummariesView from "@/src/components/summaries/SummariesView";
+import SummariesClient from "@/src/components/summaries/SummariesClient";
 import { ProductType } from "@prisma/client";
 
 async function getDemoUser() {
@@ -60,5 +60,5 @@ async function getSummariesPageData() {
 export default async function SummariesPage() {
     const data = await getSummariesPageData();
 
-    return <SummariesView products={data.products} />;
+    return <SummariesClient products={data.products} />;
 }

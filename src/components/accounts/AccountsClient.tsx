@@ -1,230 +1,243 @@
-'use client'
+'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { Plus, MoreHorizontal, Building2, CreditCard, ArrowUpRight, Wallet } from 'lucide-react';
+import { Heading, Text, Amount } from '@/src/components/ui/Typography';
+import { Button } from '@/src/components/ui/Button';
+import { CurrencyToggle } from '@/src/components/ui/CurrencyToggle';
+import { EmptyState } from '@/src/components/ui/EmptyState';
+import {
+  DropdownMenu,
+  DropdownTrigger,
+  DropdownContent,
+  DropdownItem,
+  DropdownSeparator,
+} from '@/src/components/ui/DropdownMenu';
+import { AccountCard } from './AccountCard';
 import AddInstitutionButton from './AddInstitutionButton';
 import AddProductButton from './AddProductButton';
 import AddTransactionButton from '../transactions/AddTransactionButton';
 import AddIncomeButton from './AddIncomeButton';
-
-import { getCurrencySymbol, formatNumber } from '@/src/utils/validations';
-import {
-    Product,
-    InstitutionWithProducts,
-    DisplayCurrency,
-    Currency,
-    PRODUCT_TYPE_ICONS,
-    PRODUCT_TYPE_LABELS
-} from '@/src/types';
+import { Product, InstitutionWithProducts, DisplayCurrency, Currency } from '@/src/types';
 
 interface AccountsClientProps {
-    institutions: InstitutionWithProducts[];
-    cashProducts: Product[];
-    usdToArsRate: number | null;
+  institutions: InstitutionWithProducts[];
+  cashProducts: Product[];
+  usdToArsRate: number | null;
 }
 
-const formatCurrency = (amount: number, currency: DisplayCurrency) => {
-    const symbol = currency === 'ARS' ? '$' : 'US$';
-    const formatted = formatNumber(amount, 2);
-    return `${symbol} ${formatted}`;
-};
+export default function AccountsClient({
+  institutions,
+  cashProducts,
+  usdToArsRate,
+}: AccountsClientProps) {
+  const [displayCurrency, setDisplayCurrency] = useState<DisplayCurrency>('ARS');
+  const [showAddTransaction, setShowAddTransaction] = useState(false);
+  const [showAddIncome, setShowAddIncome] = useState(false);
+  const [showAddInstitution, setShowAddInstitution] = useState(false);
+  const [showAddProduct, setShowAddProduct] = useState(false);
+  const [editingProduct, setEditingProduct] = useState<Product | null>(null);
 
-export default function AccountsClient({ institutions, cashProducts, usdToArsRate }: AccountsClientProps) {
-    const [displayCurrency, setDisplayCurrency] = useState<DisplayCurrency>('ARS');
+  const convertAmount = (amount: number, fromCurrency: Currency): number => {
+    if (displayCurrency === 'ARS') {
+      if (fromCurrency === 'USD') {
+        return amount * (usdToArsRate || 1350);
+      }
+      return amount;
+    } else {
+      if (fromCurrency === 'ARS') {
+        return amount / (usdToArsRate || 1350);
+      }
+      return amount;
+    }
+  };
 
-    const router = useRouter();
+  const calculateInstitutionBalance = (products: Product[]): number => {
+    return products.reduce((sum, product) => {
+      const converted = convertAmount(product.balance, product.currency);
+      return sum + converted;
+    }, 0);
+  };
 
-    const convertAmount = (amount: number, fromCurrency: Currency): number => {
-        if (displayCurrency === 'ARS') {
-            if (fromCurrency === 'USD') {
-                return amount * (usdToArsRate || 1350);
+  const allProducts = [...cashProducts, ...institutions.flatMap((i) => i.products)];
+  const hasAccounts = allProducts.length > 0;
+
+  return (
+    <div className="min-h-screen bg-[var(--color-bg-primary)]">
+      <div className="max-w-6xl mx-auto px-6 py-8">
+        {/* Header */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
+          <div>
+            <Heading level={1}>Mis Cuentas</Heading>
+            <Text variant="body-sm" color="secondary" className="mt-1">
+              Gestiona tus productos financieros y transacciones
+            </Text>
+          </div>
+
+          <div className="flex items-center gap-2">
+            {usdToArsRate && (
+              <CurrencyToggle
+                value={displayCurrency}
+                onChange={setDisplayCurrency}
+                rate={usdToArsRate}
+              />
+            )}
+
+            <Button
+              variant="primary"
+              leftIcon={<Plus className="w-4 h-4" />}
+              onClick={() => setShowAddTransaction(true)}
+            >
+              Nueva Transacción
+            </Button>
+
+            <DropdownMenu>
+              <DropdownTrigger asChild>
+                <Button variant="secondary" size="md">
+                  <MoreHorizontal className="w-4 h-4" />
+                </Button>
+              </DropdownTrigger>
+              <DropdownContent align="end">
+                <DropdownItem
+                  icon={<Building2 className="w-4 h-4" />}
+                  onClick={() => setShowAddInstitution(true)}
+                >
+                  Agregar Institución
+                </DropdownItem>
+                <DropdownItem
+                  icon={<CreditCard className="w-4 h-4" />}
+                  onClick={() => setShowAddProduct(true)}
+                >
+                  Agregar Producto
+                </DropdownItem>
+                <DropdownSeparator />
+                <DropdownItem
+                  icon={<ArrowUpRight className="w-4 h-4" />}
+                  onClick={() => setShowAddIncome(true)}
+                >
+                  Registrar Ingreso
+                </DropdownItem>
+              </DropdownContent>
+            </DropdownMenu>
+          </div>
+        </div>
+
+        {!hasAccounts ? (
+          <EmptyState
+            icon={Wallet}
+            title="Sin cuentas registradas"
+            description="Agrega tu primera cuenta o institución financiera para comenzar a gestionar tus finanzas"
+            action={
+              <div className="flex gap-3">
+                <Button
+                  leftIcon={<Building2 className="w-4 h-4" />}
+                  onClick={() => setShowAddInstitution(true)}
+                >
+                  Agregar Institución
+                </Button>
+                <Button
+                  variant="secondary"
+                  leftIcon={<Wallet className="w-4 h-4" />}
+                  onClick={() => setShowAddProduct(true)}
+                >
+                  Agregar Efectivo
+                </Button>
+              </div>
             }
-            return amount;
-        } else {
-            // displayCurrency === 'USD'
-            if (fromCurrency === 'ARS') {
-                return amount / (usdToArsRate || 1350);
-            }
-            return amount;
-        }
-    };
+          />
+        ) : (
+          <>
+            {/* Efectivo */}
+            {cashProducts.length > 0 && (
+              <section className="mb-8">
+                <div className="flex items-center justify-between mb-4">
+                  <Heading level={2} className="flex items-center gap-2">
+                    <Wallet className="w-6 h-6 text-[var(--color-accent)]" />
+                    Efectivo
+                  </Heading>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {cashProducts.map((product) => (
+                    <AccountCard
+                      key={product.id}
+                      product={product}
+                      displayCurrency={displayCurrency}
+                      convertedBalance={convertAmount(product.balance, product.currency)}
+                      onEdit={setEditingProduct}
+                    />
+                  ))}
+                </div>
+              </section>
+            )}
 
-    const calculateInstitutionBalance = (products: Product[]): number => {
-        return products.reduce((sum, product) => {
-            const converted = convertAmount(product.balance, product.currency);
-            return sum + converted;
-        }, 0);
-    };
+            {/* Instituciones */}
+            {institutions.map((institution) => (
+              <section key={institution.id} className="mb-8">
+                <div className="bg-[var(--color-bg-secondary)] rounded-xl border border-[var(--color-border)] p-6">
+                  <div className="flex items-start justify-between mb-6">
+                    <div>
+                      <div className="flex items-center gap-2 mb-1">
+                        <Building2 className="w-5 h-5 text-[var(--color-accent)]" />
+                        <Heading level={2}>{institution.name}</Heading>
+                      </div>
+                      <Text variant="body-sm" color="muted">
+                        Balance total:{' '}
+                        <Amount
+                          value={calculateInstitutionBalance(institution.products)}
+                          currency={displayCurrency}
+                          className="font-medium"
+                        />
+                      </Text>
+                    </div>
+                    <AddInstitutionButton mode="edit" institution={institution} />
+                  </div>
 
-    return (
-        <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-8">
-            <div className="max-w-6xl mx-auto p-6">
-                {/* Header */}
-                <div className="mb-6 flex justify-between items-center">
-                    <h1 className="text-3xl font-bold text-gray-800">Mis Cuentas</h1>
-                    <div className="flex gap-4 items-center">
-                        {/* Currency Toggle */}
-                        {usdToArsRate && (
-                            <div className="flex items-center gap-2 bg-white px-4 py-2 rounded-lg shadow">
-                                <span className="text-sm text-gray-600">Ver en:</span>
-                                <button
-                                    onClick={() => setDisplayCurrency(displayCurrency === 'ARS' ? 'USD' : 'ARS')}
-                                    className={`px-3 py-1 rounded text-sm font-medium transition ${displayCurrency === 'ARS'
-                                        ? 'bg-blue-600 text-white'
-                                        : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                                        }`}
-                                >
-                                    ARS
-                                </button>
-                                <button
-                                    onClick={() => setDisplayCurrency(displayCurrency === 'USD' ? 'ARS' : 'USD')}
-                                    className={`px-3 py-1 rounded text-sm font-medium transition ${displayCurrency === 'USD'
-                                        ? 'bg-blue-600 text-white'
-                                        : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                                        }`}
-                                >
-                                    USD
-                                </button>
-                                <span className="text-xs text-gray-500 ml-2">
-                                    1 USD = ${formatNumber(usdToArsRate, 2)}
-                                </span>
-                            </div>
-                        )}
+                  {institution.products.length > 0 ? (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                      {institution.products.map((product) => (
+                        <AccountCard
+                          key={product.id}
+                          product={product}
+                          displayCurrency={displayCurrency}
+                          convertedBalance={convertAmount(product.balance, product.currency)}
+                          onEdit={setEditingProduct}
+                        />
+                      ))}
+                    </div>
+                  ) : (
+                    <Text variant="body-sm" color="muted" className="text-center py-8">
+                      No hay productos en esta institución
+                    </Text>
+                  )}
+                </div>
+              </section>
+            ))}
+          </>
+        )}
+      </div>
 
-                        <AddTransactionButton institutions={institutions} cashProducts={cashProducts} />
-                        <AddIncomeButton institutions={institutions} cashProducts={cashProducts} />
-                        <AddInstitutionButton />
-                        <AddProductButton institutions={institutions} />
-                    </div >
-                </div >
-
-                {/* Efectivo */}
-                {
-                    cashProducts.length > 0 && (
-                        <div className="mb-8">
-                            <div className="flex justify-between items-start mb-4">
-                                <h2 className="text-xl font-semibold text-gray-700">💵 Efectivo</h2>
-                            </div>
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                {cashProducts.map((product) => (
-                                    <div
-                                        key={product.id}
-                                        onClick={() => router.push(`/accounts/${product.id}`)}
-                                        className="bg-white rounded-lg p-4 shadow hover:shadow-md transition cursor-pointer"
-                                    >
-                                        <div className="flex justify-between items-start mb-2">
-                                            <h3 className="font-semibold text-gray-800">{product.name}</h3>
-                                            <div className="flex items-center gap-2">
-                                                <div onClick={(e) => e.stopPropagation()}>
-                                                    <AddProductButton mode="edit" product={product} institutions={institutions} />
-                                                </div>
-                                                <span className="text-2xl">{PRODUCT_TYPE_ICONS[product.type]}</span>
-                                            </div>
-                                        </div>
-                                        <div className="text-xs text-gray-500 mb-2">{getCurrencySymbol(product.currency)}</div>
-                                        <div className="text-2xl font-bold text-green-600">
-                                            {formatCurrency(convertAmount(product.balance, product.currency), displayCurrency)}
-                                        </div>
-                                        <div className="text-xs text-gray-400 mt-1">
-                                            Original: {getCurrencySymbol(product.currency)} {formatNumber(product.balance, 2)}
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                    )
-                }
-
-                {/* Instituciones */}
-                {
-                    institutions.map((institution) => (
-                        <div key={institution.id} className="mb-8">
-                            <div className="bg-white rounded-lg shadow p-6">
-                                <div className="mb-4 flex justify-between items-start">
-                                    <div>
-                                        <h2 className="text-xl font-bold text-gray-800">
-                                            {institution.type === 'BANK' ? '🏦' : '📱'} {institution.name}
-                                        </h2>
-                                        <p className="text-sm text-gray-500">
-                                            Balance total: {formatCurrency(calculateInstitutionBalance(institution.products), displayCurrency)}
-                                        </p>
-                                    </div>
-                                    <AddInstitutionButton mode="edit" institution={institution} />
-                                </div>
-
-                                {institution.products.length > 0 ? (
-                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                        {institution.products.map((product) => (
-                                            <div
-                                                key={product.id}
-                                                onClick={() => router.push(`/accounts/${product.id}`)}
-                                                className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition cursor-pointer"
-                                            >
-                                                <div className="flex justify-between items-start mb-2">
-                                                    <div>
-                                                        <h4 className="font-semibold text-gray-700">{product.name}</h4>
-                                                        <span className="text-xs text-gray-500">{PRODUCT_TYPE_LABELS[product.type]}</span>
-                                                    </div>
-                                                    <div className="flex items-center gap-2">
-                                                        <div onClick={(e) => e.stopPropagation()}>
-                                                            <AddProductButton mode="edit" product={product} institutions={institutions} />
-                                                        </div>
-                                                        <span className="text-xl">{PRODUCT_TYPE_ICONS[product.type]}</span>
-                                                    </div>
-                                                </div>
-
-                                                <div className="mt-3">
-                                                    <p className="text-xs text-gray-500 mb-1">Saldo</p>
-                                                    <p
-                                                        className={`text-xl font-bold ${product.balance < 0 ? 'text-red-600' : 'text-green-600'
-                                                            }`}
-                                                    >
-                                                        {formatCurrency(convertAmount(product.balance, product.currency), displayCurrency)}
-                                                    </p>
-                                                    <div className="text-xs text-gray-400 mt-1">
-                                                        {getCurrencySymbol(product.currency)} {formatNumber(product.balance, 2)}
-                                                    </div>
-                                                </div>
-
-                                                {product.type === 'CREDIT_CARD' && (
-                                                    <div className="mt-3 pt-3 border-t border-gray-100 text-xs text-gray-500 flex justify-between">
-                                                        <span>Cierre: {product.closingDay}</span>
-                                                        <span>Vence: {product.dueDay}</span>
-                                                    </div>
-                                                )}
-
-                                                {product.type === 'LOAN' && product.limit && (
-                                                    <div className="mt-3 pt-3 border-t border-gray-100 text-xs text-gray-500">
-                                                        <span>Límite disponible: {getCurrencySymbol(product.currency)} {formatNumber(product.limit, 2)}</span>
-                                                    </div>
-                                                )}
-                                            </div>
-                                        ))}
-                                    </div>
-                                ) : (
-                                    <p className="text-gray-400 text-center py-8">
-                                        No hay productos en esta institución
-                                    </p>
-                                )}
-                            </div>
-                        </div>
-                    ))
-                }
-
-                {/* Estado vacío */}
-                {
-                    institutions.length === 0 && cashProducts.length === 0 && (
-                        <div className="text-center py-20">
-                            <p className="text-gray-500 text-lg mb-4">
-                                No tienes cuentas registradas
-                            </p>
-                            <p className="text-gray-400">
-                                Comienza agregando una institución o efectivo
-                            </p>
-                        </div>
-                    )
-                }
-            </div >
-        </div >
-    );
+      {/* Modales */}
+      {showAddTransaction && (
+        <AddTransactionButton
+          institutions={institutions}
+          cashProducts={cashProducts}
+        />
+      )}
+      {showAddIncome && (
+        <AddIncomeButton
+          institutions={institutions}
+          cashProducts={cashProducts}
+        />
+      )}
+      {showAddInstitution && <AddInstitutionButton />}
+      {showAddProduct && <AddProductButton institutions={institutions} />}
+      {editingProduct && (
+        <AddProductButton
+          mode="edit"
+          product={editingProduct}
+          institutions={institutions}
+        />
+      )}
+    </div>
+  );
 }

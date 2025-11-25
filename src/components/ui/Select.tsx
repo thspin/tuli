@@ -1,58 +1,80 @@
-// src/components/ui/Select.tsx
 import React from 'react';
+import { cn } from '@/src/lib/utils';
 
 interface SelectProps extends React.SelectHTMLAttributes<HTMLSelectElement> {
-    label?: string;
-    error?: string;
-    helperText?: string;
-    fullWidth?: boolean;
-    options?: Array<{ value: string; label: string }>;
+  label?: string;
+  error?: string;
+  helperText?: string;
+  fullWidth?: boolean;
+  options?: Array<{ value: string; label: string }>;
 }
 
 export default function Select({
-    label,
-    error,
-    helperText,
-    fullWidth = true,
-    options,
-    children,
-    className = '',
-    ...props
+  label,
+  error,
+  helperText,
+  fullWidth = true,
+  options,
+  children,
+  className = '',
+  id,
+  ...props
 }: SelectProps) {
-    const widthClass = fullWidth ? 'w-full' : '';
-    const errorClass = error ? 'border-red-300 focus:ring-red-500' : 'border-gray-300 focus:ring-blue-500';
+  const selectId = id || `select-${Math.random().toString(36).substr(2, 9)}`;
 
-    return (
-        <div className={widthClass}>
-            {label && (
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                    {label}
-                    {props.required && <span className="text-red-500 ml-1">*</span>}
-                </label>
-            )}
+  return (
+    <div className={cn(fullWidth && 'w-full', 'space-y-1.5')}>
+      {label && (
+        <label
+          htmlFor={selectId}
+          className="block text-sm font-medium text-[var(--color-text-secondary)]"
+        >
+          {label}
+          {props.required && <span className="text-[var(--color-expense)] ml-1" aria-label="requerido">*</span>}
+        </label>
+      )}
 
-            <select
-                className={`${widthClass} p-2 border rounded-lg focus:ring-2 focus:border-transparent disabled:opacity-50 disabled:bg-gray-100 ${errorClass} ${className}`}
-                {...props}
-            >
-                {options ? (
-                    options.map((option) => (
-                        <option key={option.value} value={option.value}>
-                            {option.label}
-                        </option>
-                    ))
-                ) : (
-                    children
-                )}
-            </select>
+      <select
+        id={selectId}
+        className={cn(
+          'w-full h-10 px-3 rounded-lg border bg-[var(--color-bg-secondary)]',
+          'text-[var(--color-text-primary)]',
+          'transition-colors duration-150',
+          'focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)] focus:border-transparent',
+          'disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-[var(--color-bg-tertiary)]',
+          error
+            ? 'border-[var(--color-expense)] focus:ring-[var(--color-expense)]'
+            : 'border-[var(--color-border)] hover:border-[var(--color-border-hover)]',
+          className
+        )}
+        aria-invalid={!!error}
+        aria-describedby={error ? `${selectId}-error` : helperText ? `${selectId}-helper` : undefined}
+        {...props}
+      >
+        {options ? (
+          options.map((option) => (
+            <option key={option.value} value={option.value}>
+              {option.label}
+            </option>
+          ))
+        ) : (
+          children
+        )}
+      </select>
 
-            {error && (
-                <p className="mt-1 text-sm text-red-600">{error}</p>
-            )}
+      {error && (
+        <p id={`${selectId}-error`} className="text-xs text-[var(--color-expense)]" role="alert">
+          {error}
+        </p>
+      )}
 
-            {!error && helperText && (
-                <p className="mt-1 text-xs text-gray-500">{helperText}</p>
-            )}
-        </div>
-    );
+      {!error && helperText && (
+        <p id={`${selectId}-helper`} className="text-xs text-[var(--color-text-muted)]">
+          {helperText}
+        </p>
+      )}
+    </div>
+  );
 }
+
+export { Select };
