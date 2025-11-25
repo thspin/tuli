@@ -1,6 +1,6 @@
 'use server'
 
-import { prisma } from "@/lib/prisma";
+import { prisma } from "@/src/lib/db/prisma";
 import { revalidatePath } from "next/cache";
 import { InstitutionType, ProductType, Currency } from "@prisma/client";
 import {
@@ -11,7 +11,7 @@ import {
   isCurrencyAllowedForInstitution,
   isCurrencyAllowedForCash,
   requiresInstitution,
-} from "@/lib/validations";
+} from "@/src/utils/validations";
 
 /**
  * Obtiene o crea el usuario demo

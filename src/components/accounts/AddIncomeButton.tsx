@@ -1,8 +1,8 @@
 'use client'
 
 import { useState, useEffect } from 'react';
-import { addIncome } from './income-actions';
-import { getCategories } from '../categories/actions';
+import { addIncome } from '@/src/actions/accounts/income-actions';
+import { getCategories } from '@/src/actions/categories/category-actions';
 
 interface Product {
     id: string;

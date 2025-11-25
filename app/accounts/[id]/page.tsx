@@ -1,5 +1,5 @@
 
-import { getProductDetails } from '../actions';
+import { getProductDetails } from '@/src/actions/accounts/account-actions';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import TransactionList from './TransactionList';

@@ -1,5 +1,5 @@
-import { prisma } from "@/lib/prisma";
-import SummariesView from "./SummariesView";
+import { prisma } from "@/src/lib/db/prisma";
+import SummariesView from "@/src/components/summaries/SummariesView";
 import { ProductType } from "@prisma/client";
 
 async function getDemoUser() {
@@ -48,8 +48,9 @@ async function getSummariesPageData() {
         products: products.map(p => ({
             id: p.id,
             name: p.name,
-            type: p.type as 'CREDIT_CARD' | 'LOAN',
+            type: p.type,
             currency: p.currency,
+            balance: Number(p.balance),
             closingDay: p.closingDay,
             dueDay: p.dueDay,
         }))

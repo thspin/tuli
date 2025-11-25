@@ -1,5 +1,5 @@
 
-import { prisma } from './lib/prisma';
+import { prisma } from '../src/lib/db/prisma';
 
 async function verify() {
     const transactions = await prisma.transaction.findMany({

@@ -1,6 +1,6 @@
 // lib/exchangeRate.ts
 import { Currency } from '@prisma/client';
-import { prisma } from './prisma';
+import { prisma } from '../lib/db/prisma';
 
 /**
  * Servicio para manejar tipos de cambio entre monedas

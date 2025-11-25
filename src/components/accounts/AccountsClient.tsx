@@ -7,55 +7,21 @@ import AddProductButton from './AddProductButton';
 import AddTransactionButton from '../transactions/AddTransactionButton';
 import AddIncomeButton from './AddIncomeButton';
 
-import { getCurrencySymbol, formatNumber } from '@/lib/validations';
-
-type DisplayCurrency = 'ARS' | 'USD';
-type ProductType = 'CASH' | 'SAVINGS_ACCOUNT' | 'CHECKING_ACCOUNT' | 'DEBIT_CARD' | 'CREDIT_CARD' | 'LOAN';
-type Currency = 'ARS' | 'USD' | 'USDT' | 'USDC' | 'BTC';
-
-interface Product {
-    id: string;
-    name: string;
-    type: ProductType;
-    currency: Currency;
-    balance: number;
-    closingDay?: number | null;
-    dueDay?: number | null;
-    limit?: number | null;
-    sharedLimit?: boolean;
-    institutionId?: string | null;
-}
-
-interface Institution {
-    id: string;
-    name: string;
-    type: 'BANK' | 'WALLET';
-    products: Product[];
-}
+import { getCurrencySymbol, formatNumber } from '@/src/utils/validations';
+import {
+    Product,
+    InstitutionWithProducts,
+    DisplayCurrency,
+    Currency,
+    PRODUCT_TYPE_ICONS,
+    PRODUCT_TYPE_LABELS
+} from '@/src/types';
 
 interface AccountsClientProps {
-    institutions: Institution[];
+    institutions: InstitutionWithProducts[];
     cashProducts: Product[];
     usdToArsRate: number | null;
 }
-
-const PRODUCT_TYPE_ICONS: Record<ProductType, string> = {
-    CASH: '💵',
-    SAVINGS_ACCOUNT: '🏦',
-    CHECKING_ACCOUNT: '📋',
-    DEBIT_CARD: '💳',
-    CREDIT_CARD: '💳',
-    LOAN: '📊',
-};
-
-const PRODUCT_TYPE_LABELS: Record<ProductType, string> = {
-    CASH: 'Efectivo',
-    SAVINGS_ACCOUNT: 'Caja de Ahorro',
-    CHECKING_ACCOUNT: 'Cuenta Corriente',
-    DEBIT_CARD: 'Tarjeta de Débito',
-    CREDIT_CARD: 'Tarjeta de Crédito',
-    LOAN: 'Préstamo',
-};
 
 const formatCurrency = (amount: number, currency: DisplayCurrency) => {
     const symbol = currency === 'ARS' ? '$' : 'US$';

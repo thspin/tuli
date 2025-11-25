@@ -1,7 +1,7 @@
 // app/accounts/page.tsx
 import Link from 'next/link';
-import { getAccountsPageData } from './actions';
-import AccountsClient from './AccountsClient';
+import { getAccountsPageData } from '@/src/actions/accounts/account-actions';
+import AccountsClient from '@/src/components/accounts/AccountsClient';
 
 export default async function AccountsPage() {
   const data = await getAccountsPageData();

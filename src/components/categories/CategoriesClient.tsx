@@ -1,15 +1,9 @@
 'use client'
 
 import { useState, useEffect } from 'react';
-import { getCategories, createCategory, updateCategory, deleteCategory } from './actions';
-
-interface Category {
-    id: string;
-    name: string;
-    icon: string | null;
-    categoryType: 'INCOME' | 'EXPENSE';
-    isSystem: boolean;
-}
+import { getCategories, createCategory, updateCategory, deleteCategory } from '@/src/actions/categories/category-actions';
+import { Category, COMMON_CATEGORY_EMOJIS } from '@/src/types';
+import { Modal, Input, Button } from '@/src/components/ui';
 
 export default function CategoriesClient() {
     const [activeTab, setActiveTab] = useState<'INCOME' | 'EXPENSE'>('EXPENSE');
@@ -110,7 +104,7 @@ export default function CategoriesClient() {
         }
     };
 
-    const commonEmojis = ['🏷️', '🛒', '🍽️', '🚗', '🏠', '💊', '✈️', '🎮', '🎓', '🎁', '💰', '💼', '🏦', '📈'];
+
 
     return (
         <div className="min-h-screen bg-gray-50 py-8">
@@ -146,8 +140,8 @@ export default function CategoriesClient() {
                     <button
                         onClick={() => setActiveTab('EXPENSE')}
                         className={`px-6 py-2 rounded-md text-sm font-medium transition-colors ${activeTab === 'EXPENSE'
-                                ? 'bg-blue-100 text-blue-700'
-                                : 'text-gray-500 hover:text-gray-700'
+                            ? 'bg-blue-100 text-blue-700'
+                            : 'text-gray-500 hover:text-gray-700'
                             }`}
                     >
                         💸 Egresos
@@ -155,8 +149,8 @@ export default function CategoriesClient() {
                     <button
                         onClick={() => setActiveTab('INCOME')}
                         className={`px-6 py-2 rounded-md text-sm font-medium transition-colors ${activeTab === 'INCOME'
-                                ? 'bg-green-100 text-green-700'
-                                : 'text-gray-500 hover:text-gray-700'
+                            ? 'bg-green-100 text-green-700'
+                            : 'text-gray-500 hover:text-gray-700'
                             }`}
                     >
                         💰 Ingresos
@@ -214,87 +208,73 @@ export default function CategoriesClient() {
 
                 {/* Modal */}
                 {isModalOpen && (
-                    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-                        <div className="bg-white rounded-lg max-w-md w-full p-6">
-                            <div className="flex justify-between items-center mb-4">
-                                <h2 className="text-xl font-bold text-gray-900">
-                                    {editingCategory ? 'Editar Categoría' : 'Nueva Categoría'}
-                                </h2>
-                                <button
-                                    onClick={() => setIsModalOpen(false)}
-                                    className="text-gray-500 hover:text-gray-700"
-                                >
-                                    ✕
-                                </button>
+                    <Modal
+                        isOpen={isModalOpen}
+                        onClose={() => setIsModalOpen(false)}
+                        title={editingCategory ? 'Editar Categoría' : 'Nueva Categoría'}
+                    >
+
+                        {error && (
+                            <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm">
+                                {error}
                             </div>
+                        )}
 
-                            {error && (
-                                <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm">
-                                    {error}
-                                </div>
-                            )}
+                        <form onSubmit={handleSubmit} className="space-y-4">
+                            <Input
+                                label="Nombre"
+                                value={formData.name}
+                                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                                placeholder="Ej: Supermercado"
+                                required
+                            />
 
-                            <form onSubmit={handleSubmit} className="space-y-4">
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                                        Nombre
-                                    </label>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                    Icono
+                                </label>
+                                <div className="flex gap-2 mb-2">
                                     <input
                                         type="text"
-                                        value={formData.name}
-                                        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                                        className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                        placeholder="Ej: Supermercado"
-                                        required
+                                        value={formData.icon}
+                                        onChange={(e) => setFormData({ ...formData, icon: e.target.value })}
+                                        className="w-16 p-3 border border-gray-300 rounded-lg text-center text-xl"
+                                        maxLength={2}
                                     />
-                                </div>
-
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                                        Icono
-                                    </label>
-                                    <div className="flex gap-2 mb-2">
-                                        <input
-                                            type="text"
-                                            value={formData.icon}
-                                            onChange={(e) => setFormData({ ...formData, icon: e.target.value })}
-                                            className="w-16 p-3 border border-gray-300 rounded-lg text-center text-xl"
-                                            maxLength={2}
-                                        />
-                                        <div className="flex-1 flex flex-wrap gap-2 p-2 bg-gray-50 rounded-lg">
-                                            {commonEmojis.map(emoji => (
-                                                <button
-                                                    key={emoji}
-                                                    type="button"
-                                                    onClick={() => setFormData({ ...formData, icon: emoji })}
-                                                    className="hover:bg-gray-200 p-1 rounded text-xl transition-colors"
-                                                >
-                                                    {emoji}
-                                                </button>
-                                            ))}
-                                        </div>
+                                    <div className="flex-1 flex flex-wrap gap-2 p-2 bg-gray-50 rounded-lg">
+                                        {COMMON_CATEGORY_EMOJIS.map(emoji => (
+                                            <button
+                                                key={emoji}
+                                                type="button"
+                                                onClick={() => setFormData({ ...formData, icon: emoji })}
+                                                className="hover:bg-gray-200 p-1 rounded text-xl transition-colors"
+                                            >
+                                                {emoji}
+                                            </button>
+                                        ))}
                                     </div>
                                 </div>
+                            </div>
 
-                                <div className="flex gap-3 pt-4">
-                                    <button
-                                        type="button"
-                                        onClick={() => setIsModalOpen(false)}
-                                        className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 py-3 rounded-lg font-medium transition-colors"
-                                    >
-                                        Cancelar
-                                    </button>
-                                    <button
-                                        type="submit"
-                                        disabled={isSaving}
-                                        className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-medium transition-colors disabled:opacity-50"
-                                    >
-                                        {isSaving ? 'Guardando...' : 'Guardar'}
-                                    </button>
-                                </div>
-                            </form>
-                        </div>
-                    </div>
+                            <div className="flex gap-3 pt-4">
+                                <Button
+                                    type="button"
+                                    variant="secondary"
+                                    onClick={() => setIsModalOpen(false)}
+                                    className="flex-1"
+                                >
+                                    Cancelar
+                                </Button>
+                                <Button
+                                    type="submit"
+                                    loading={isSaving}
+                                    className="flex-1"
+                                >
+                                    {isSaving ? 'Guardando...' : 'Guardar'}
+                                </Button>
+                            </div>
+                        </form>
+                    </Modal>
                 )}
             </div>
         </div>

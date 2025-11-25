@@ -1,6 +1,6 @@
 'use server'
 
-import { prisma } from "@/lib/prisma";
+import { prisma } from "@/src/lib/db/prisma";
 import { revalidatePath } from "next/cache";
 import { ProductType } from "@prisma/client";
 

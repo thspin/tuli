@@ -1,36 +1,13 @@
 'use client'
 
 import { useState, useEffect } from 'react';
-import { generateAllSummaries, getProductSummaries, getSummaryDetail } from './actions';
-import { payOffSummary, getPaymentAccounts } from './payment-actions';
-
-interface Product {
-    id: string;
-    name: string;
-    type: 'CREDIT_CARD' | 'LOAN';
-    currency: string;
-    closingDay?: number | null;
-    dueDay?: number | null;
-}
-
-interface Summary {
-    id: string;
-    year: number;
-    month: number;
-    closingDate: Date;
-    dueDate: Date;
-    totalAmount: number;
-    isClosed: boolean;
-}
+import { generateAllSummaries, getProductSummaries, getSummaryDetail } from '@/src/actions/summaries/summary-actions';
+import { payOffSummary, getPaymentAccounts } from '@/src/actions/summaries/payment-actions';
+import { Product, Summary, MONTH_NAMES } from '@/src/types';
 
 interface SummariesViewProps {
     products: Product[];
 }
-
-const MONTH_NAMES = [
-    'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
-    'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
-];
 
 export default function SummariesView({ products }: SummariesViewProps) {
     const [selectedProductId, setSelectedProductId] = useState<string>('');

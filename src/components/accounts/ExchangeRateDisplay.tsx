@@ -1,6 +1,6 @@
 'use client'
 
-import { formatNumber } from '@/lib/validations';
+import { formatNumber } from '@/src/utils/validations';
 
 interface ExchangeRateDisplayProps {
   usdToArs: number | null;

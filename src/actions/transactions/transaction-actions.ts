@@ -1,6 +1,6 @@
 'use server'
 
-import { prisma } from "@/lib/prisma";
+import { prisma } from "@/src/lib/db/prisma";
 import { revalidatePath } from "next/cache";
 import { TransactionType, ProductType } from "@prisma/client";
 import { v4 as uuidv4 } from 'uuid';

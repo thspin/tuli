@@ -1,7 +1,7 @@
 // app/api/accounts/route.ts
 import { NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
-import { getUsdToArsRate } from '@/lib/exchangeRate';
+import { prisma } from '@/src/lib/db/prisma';
+import { getUsdToArsRate } from '@/src/utils/exchangeRate';
 
 export async function GET() {
   try {
